@@ -3,36 +3,45 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from .models import Post, Comment
-from .serializers import PostSerializer, CommentSerializer
+from .serializers import PostSerializer, CommentSerializer, PostListSerializer
 
 # Create your views here.
-class PostViewSet(viewsets.GenericViewSet, 
-                  mixins.ListModelMixin, 
-                  mixins.CreateModelMixin,
-                  mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin, 
-                  mixins.DestroyModelMixin):
+class PostViewSet(
+    viewsets.GenericViewSet, 
+    mixins.ListModelMixin, 
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin, 
+    mixins.DestroyModelMixin
+    ):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PostListSerializer
+        return PostSerializer
 
-class CommentViewSet(viewsets.GenericViewSet,
-                     mixins.RetrieveModelMixin,
-                     mixins.UpdateModelMixin, 
-                     mixins.DestroyModelMixin):
+class CommentViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin, 
+    mixins.DestroyModelMixin
+    ):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-class PostCommentViewSet(viewsets.GenericViewSet,
-                          mixins.ListModelMixin,
-                          mixins.CreateModelMixin):
-    queryset = Comment.objects.all()
+class PostCommentViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin
+    ):
     serializer_class = CommentSerializer
+    queryset = Comment.objects.all()
 
-    def list(self, request, post_id=None):
-        post = get_object_or_404(Post, id=post_id)
-        queryset = self.filter_queryset(self.get_queryset().filter(post=post))
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    #url에서 추출된 post아이디를 가져오는 것
+    def get_queryset(self):
+        post = self.kwargs.get("post_id")
+        queryset = Comment.objects.filter(post_id=post)
+        return queryset
     
     def create(self, request, post_id=None):
         post = get_object_or_404(Post, id=post_id)
