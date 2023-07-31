@@ -8,12 +8,17 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+        
+class CurrentUserDefault(serializers.CurrentUserDefault):
+    def set_context(self, serializer_field):
+        self.user = serializer_field.context['request'].user
 
+    def __call__(self):
+        return self.user
 #list view (list 메소드로 불렀을 때)
 class PostListSerializer(serializers.ModelSerializer):
     #content 말고 content개수만 보이기
     comments_cnt = serializers.SerializerMethodField()
-    
     def get_comments_cnt(self, instance):
         return instance.comments.count()
     
@@ -25,18 +30,19 @@ class PostListSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'title',
-            'writer',
+            'writer', 
             'content',
             'comments_cnt',
+            'likes', 
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt','likes',]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt', 'likes']
 
 #detail view (list 이외의 메소드로 불렀을 때)
 class PostSerializer(serializers.ModelSerializer):
     # read_only = True가 아닌 필드와 serializer메소드필드 유지
     comments = serializers.SerializerMethodField()
     title = serializers.CharField()
-    writer = serializers.CharField()
+    writer = serializers.HiddenField(default=serializers.CurrentUserDefault())
     content = serializers.CharField()
 
     def get_comments(self, instance):
@@ -52,4 +58,6 @@ class PostSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'comments',
+            'writer',
+            'likes'
         ]

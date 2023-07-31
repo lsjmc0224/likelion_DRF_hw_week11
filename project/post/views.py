@@ -32,7 +32,13 @@ class PostViewSet(
         like_post.likes += 1
         like_post.save(update_fields=["likes"])
         return Response()
-
+    
+    @action(methods=['GET'], detail=False)
+    def popular(self, request):
+        pop_post = self.get_queryset().order_by("-likes")[:3]
+        pop_post_serializer = PostListSerializer(pop_post, many=True)
+        return Response(pop_post_serializer.data)
+    
 class CommentViewSet(
     viewsets.GenericViewSet,
     mixins.RetrieveModelMixin,
