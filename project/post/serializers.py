@@ -29,7 +29,7 @@ class PostListSerializer(serializers.ModelSerializer):
             'content',
             'comments_cnt',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt','likes',]
 
 #detail view (list 이외의 메소드로 불렀을 때)
 class PostSerializer(serializers.ModelSerializer):

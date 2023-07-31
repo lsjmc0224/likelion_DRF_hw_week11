@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.shortcuts import get_object_or_404
 
@@ -24,6 +25,13 @@ class PostViewSet(
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated()]
         return []
+    
+    @action(methods=['GET'], detail=True)
+    def like(self, request, pk=None):
+        like_post = self.get_object()
+        like_post.likes += 1
+        like_post.save(update_fields=["likes"])
+        return Response()
 
 class CommentViewSet(
     viewsets.GenericViewSet,
