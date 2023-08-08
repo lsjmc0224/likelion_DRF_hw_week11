@@ -24,12 +24,14 @@ class PostSerializer(serializers.ModelSerializer):
             'comments',
             'writer',
             'like_cnt',
+            'dislike_cnt',
         ]
         
 class PostListSerializer(serializers.ModelSerializer):
     #content 말고 content개수만 보이기
     comments_cnt = serializers.SerializerMethodField()
     like_cnt = serializers.IntegerField()
+    dislike_cnt = serializers.IntegerField()
 
     def get_comments_cnt(self, instance):
         return instance.comments.count()
@@ -46,8 +48,9 @@ class PostListSerializer(serializers.ModelSerializer):
             'content',
             'comments_cnt',
             'like_cnt',
+            'dislike_cnt',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt', 'like_cnt' ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'comments_cnt', 'like_cnt', 'dislike_cnt' ]
 
 class CommentSerializer(serializers.ModelSerializer):
 

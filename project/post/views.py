@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -15,6 +15,9 @@ class PostViewSet(viewsets.ModelViewSet):
         like_cnt=Count(
             "reactions", filter=Q(reactions__reaction="like"), distinct=True
         ),
+        dislike_cnt=Count(
+            "reactions", filter=Q(reactions__reaction="dislike"), distinct=True
+        )
     )
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["title"]
@@ -26,16 +29,36 @@ class PostViewSet(viewsets.ModelViewSet):
         return PostSerializer
     
     def get_permissions(self):
-        if self.action in ['likes', 'create', 'update', 'partial_update', 'destroy']:
+        if self.action in ['dislikes', 'likes', 'create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated()]
         return []
     
     @action(methods=["POST"], detail=True, permission_classes=[IsAuthenticated])
     def likes(self, request, pk=None):
         post = self.get_object()
-        PostReaction.objects.create(post=post, user=request.user, reaction="like")
-        return Response()
+        user = request.user
+
+        existing_reaction = PostReaction.objects.filter(post=post, user=request.user, reaction="like").first()
+        if existing_reaction:
+            existing_reaction.delete()
+            return Response({"message": "Like removed"}, status=status.HTTP_200_OK)
+        else:
+            PostReaction.objects.create(post=post, user=user, reaction="like")
+            return Response({"message": "Liked"}, status=status.HTTP_201_CREATED)
     
+    @action(methods=["POST"], detail=True, permission_classes=[IsAuthenticated])
+    def dislikes(self, request, pk=None):
+        post = self.get_object()
+        user = request.user
+
+        existing_reaction = PostReaction.objects.filter(post=post, user=request.user, reaction="dislike").first()
+        if existing_reaction:
+            existing_reaction.delete()
+            return Response({"message": "Dislike removed"}, status=status.HTTP_200_OK)
+        else:
+            PostReaction.objects.create(post=post, user=user, reaction="dislike")
+            return Response({"message": "Disliked"}, status=status.HTTP_201_CREATED)
+
     @action(methods=["GET"], detail=False)
     def top5(self, request):
         queryset = self.get_queryset().order_by("-like_cnt")[:5]

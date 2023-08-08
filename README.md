@@ -1,13 +1,18 @@
 # 11주차 백엔드 과제 DRF GenericViewSet (1)  
   
 ### 시작하는법  
-1. 클론받기
-2. terminal -> git bash
-3. python -m venv venv
-4. source venv/Scripts/activate
-5. pip install django
-6. pip install djangorestframework
-7. cd project
-8. python manage.py makemigrations
-9. python manage.py migrate
-10. python manage.py runserver
+클론받기  
+terminal -> git bash  
+python -m venv venv  
+source venv/Scripts/activate  
+pip install django  
+pip install djangorestframework  
+cd project  
+python manage.py makemigrations  
+python manage.py migrate  
+
+### 시작 후...  
+python manage.py createsuperuser
+python manage.py runserver  
+/admin 경로에서 로그인  
+이제 post를 게시할 준비가 되었습니다.
