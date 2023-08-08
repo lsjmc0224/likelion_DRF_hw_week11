@@ -3,19 +3,18 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer, PostListSerializer
 # Create your views here.
-class PostViewSet(
-    viewsets.GenericViewSet, 
-    mixins.ListModelMixin, 
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin, 
-    mixins.DestroyModelMixin
-    ):
+class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["title"]
+    search_fields = ["title", "^title"]
+    ordering_fields = ["title", "created_at"]
     def get_serializer_class(self):
         if self.action == 'list':
             return PostListSerializer
